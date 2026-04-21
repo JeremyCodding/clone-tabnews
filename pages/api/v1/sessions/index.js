@@ -28,10 +28,8 @@ async function postHandler(req, res) {
 
 async function deleteHandler(req, res) {
   const sessionToken = req.cookies.session_id;
-  console.log(sessionToken);
 
   const sessionObject = await session.findOneValidByToken(sessionToken);
-  console.log(sessionObject);
 
   const expiredSession = await session.expireById(sessionObject.id);
   controller.clearSessionCookie(res);
