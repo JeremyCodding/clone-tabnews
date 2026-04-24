@@ -39,7 +39,16 @@ describe("Use case: Registration Flow (all successful)", () => {
     });
   });
 
-  test("Receive activation email", async () => {});
+  test("Receive activation email", async () => {
+    const lastEmail = await orchestrator.getLastEmail();
+
+    console.log(lastEmail);
+
+    expect(lastEmail.sender).toBe("<jeremy.jingou@gmail.com>");
+    expect(lastEmail.recipients[0]).toBe("<registration.flow@curso.dev>");
+    expect(lastEmail.subject).toBe("Ative seu cadastro no JingouSpaces");
+    expect(lastEmail.text).toContain("RegistrationFlow");
+  });
 
   test("Activate account", async () => {});
 
