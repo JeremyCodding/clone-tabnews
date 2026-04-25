@@ -1,7 +1,7 @@
 import email from "infra/email";
 
 async function sendEmailToUser(user) {
-  email.send({
+  await email.send({
     from: "Jingou <jeremy.jingou@gmail.com>",
     to: user.email,
     subject: "Ative seu cadastro no JingouSpaces",
