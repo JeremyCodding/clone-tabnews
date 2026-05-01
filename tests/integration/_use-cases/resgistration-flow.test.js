@@ -1,5 +1,6 @@
 import activation from "models/activation.js";
 import orchestrator from "../../orchestrator.js";
+import webserver from "infra/webserver.js";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -43,16 +44,22 @@ describe("Use case: Registration Flow (all successful)", () => {
 
   test("Receive activation email", async () => {
     const lastEmail = await orchestrator.getLastEmail();
+    const tokenInEmail = await orchestrator.findTokenInEmail(lastEmail.text);
 
-    const activationToken = await activation.findOneByUserId(
-      createUserResponseBody.id,
-    );
+    const tokenData = await activation.findOneByValidToken(tokenInEmail);
+
+    console.log(tokenData);
 
     expect(lastEmail.sender).toBe("<jeremy.jingou@gmail.com>");
     expect(lastEmail.recipients[0]).toBe("<registration.flow@curso.dev>");
     expect(lastEmail.subject).toBe("Ative seu cadastro no JingouSpaces");
     expect(lastEmail.text).toContain("RegistrationFlow");
-    expect(lastEmail.text).toContain(activationToken.id);
+    expect(lastEmail.text).toContain(
+      `${webserver.origin}/cadastro/ativar/${tokenData.id}`,
+    );
+
+    expect(tokenData.user_id).toBe(createUserResponseBody.id);
+    expect(tokenData.used_at).toBe(null);
   });
 
   test("Activate account", async () => {});

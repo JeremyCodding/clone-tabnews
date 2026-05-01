@@ -86,9 +86,22 @@ async function getLastEmail() {
 
   lastEmailItem.text = emailTextBody;
 
-  console.log(lastEmailItem);
+  // console.log(lastEmailItem);
 
   return lastEmailItem;
+}
+
+async function findTokenInEmail(emailBody) {
+  const match = emailBody.match(/cadastro\/ativar\/([a-zA-Z0-9-]+)/);
+
+  if (match) {
+    const token = match[1]; // O índice 1 contém o que foi capturado entre os parênteses
+    console.log("Token extraído:", token);
+  } else {
+    console.log("Token não encontrado.");
+  }
+
+  return match[1];
 }
 
 const orchestrator = {
@@ -99,6 +112,7 @@ const orchestrator = {
   createSession,
   deleteAllEmails,
   getLastEmail,
+  findTokenInEmail,
 };
 
 export default orchestrator;
