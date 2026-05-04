@@ -10,11 +10,29 @@ beforeAll(async () => {
 });
 
 describe("GET /api/v1/user", () => {
+  describe("Anonymous user", () => {
+    test("Retrieving the endpoint", async () => {
+      const response = await fetch("http://localhost:3000/api/v1/user");
+
+      expect(response.status).toBe(403);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ForbiddenError",
+        message: "Você não possui permissão para executar essa ação.",
+        action: 'Verifique se o seu usuário possui a feature "read:session"',
+        statusCode: 403,
+      });
+    });
+  });
   describe("Default user", () => {
     test("With valid session", async () => {
       const createdUser = await orchestrator.createUser({
         username: "UserWithValidSession",
       });
+
+      const activatedUser = await orchestrator.activateUser(createdUser.id);
 
       const sessionObject = await orchestrator.createSession(createdUser.id);
 
@@ -35,13 +53,13 @@ describe("GET /api/v1/user", () => {
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        id: createdUser.id,
+        id: activatedUser.id,
         username: "UserWithValidSession",
-        email: createdUser.email,
-        password: createdUser.password,
-        features: ["read:activation_token"],
-        created_at: createdUser.created_at.toISOString(),
-        updated_at: createdUser.updated_at.toISOString(),
+        email: activatedUser.email,
+        password: activatedUser.password,
+        features: ["create:session", "read:session"],
+        created_at: activatedUser.created_at.toISOString(),
+        updated_at: activatedUser.updated_at.toISOString(),
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
@@ -160,6 +178,8 @@ describe("GET /api/v1/user", () => {
         username: "UserWithHalfExpiredSession",
       });
 
+      const activatedUser = await orchestrator.activateUser(createdUser.id);
+
       const sessionObject = await orchestrator.createSession(createdUser.id);
 
       jest.useRealTimers();
@@ -175,13 +195,13 @@ describe("GET /api/v1/user", () => {
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        id: createdUser.id,
+        id: activatedUser.id,
         username: "UserWithHalfExpiredSession",
-        email: createdUser.email,
-        password: createdUser.password,
-        features: ["read:activation_token"],
-        created_at: createdUser.created_at.toISOString(),
-        updated_at: createdUser.updated_at.toISOString(),
+        email: activatedUser.email,
+        password: activatedUser.password,
+        features: ["create:session", "read:session"],
+        created_at: activatedUser.created_at.toISOString(),
+        updated_at: activatedUser.updated_at.toISOString(),
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
