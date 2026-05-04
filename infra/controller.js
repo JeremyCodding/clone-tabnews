@@ -9,6 +9,7 @@ import {
   ForbiddenError,
 } from "infra/errors";
 import user from "models/user.js";
+import authorization from "models/authorization.js";
 
 function onNoMatchHandler(req, res) {
   const publicErrorObject = new MethodNotAllowedError();
@@ -70,7 +71,7 @@ async function injectAnonymousOrUser(req, res, next) {
 }
 
 async function injectAuthenticatedUser(req) {
-  const sessionToken = req.cookes.session_id;
+  const sessionToken = req.cookies.session_id;
   const sessionObject = await session.findOneValidByToken(sessionToken);
   const userObject = await user.findOneById(sessionObject.user_id);
 
@@ -95,7 +96,7 @@ function canRequest(feature) {
   return function canRequestMiddleware(req, res, next) {
     const userTryingToRequest = req.context.user;
 
-    if (userTryingToRequest.features.includes(feature)) {
+    if (authorization.can(userTryingToRequest, feature)) {
       return next();
     }
 
