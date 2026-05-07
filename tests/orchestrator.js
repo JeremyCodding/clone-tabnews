@@ -106,7 +106,12 @@ async function findTokenInEmail(emailBody) {
 }
 
 async function activateUser(userId) {
-  return await activation.activateUserByUserId(userId)
+  return await activation.activateUserByUserId(userId);
+}
+
+async function addFeaturesToUser(userObject, features) {
+  const updatedUser = await user.addFeatures(userObject.id, features);
+  return updatedUser;
 }
 
 const orchestrator = {
@@ -119,6 +124,7 @@ const orchestrator = {
   getLastEmail,
   findTokenInEmail,
   activateUser,
+  addFeaturesToUser,
 };
 
 export default orchestrator;
