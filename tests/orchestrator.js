@@ -5,6 +5,7 @@ import database from "infra/database.js";
 import migrator from "models/migrator.js";
 import user from "models/user.js";
 import session from "models/session";
+import activation from "models/activation";
 
 const emailHttpUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
 
@@ -74,6 +75,10 @@ async function getLastEmail() {
   const emailListBody = await emailListResponse.json();
   const lastEmailItem = emailListBody.pop();
 
+  if (!lastEmailItem) {
+    return null;
+  }
+
   const emailTextResponse = await fetch(
     `${emailHttpUrl}/messages/${lastEmailItem.id}.plain`,
   );
@@ -82,9 +87,31 @@ async function getLastEmail() {
 
   lastEmailItem.text = emailTextBody;
 
-  console.log(lastEmailItem);
+  // console.log(lastEmailItem);
 
   return lastEmailItem;
+}
+
+async function findTokenInEmail(emailBody) {
+  const match = emailBody.match(/cadastro\/ativar\/([a-zA-Z0-9-]+)/);
+
+  if (match) {
+    const token = match[1]; // O índice 1 contém o que foi capturado entre os parênteses
+    console.log("Token extraído:", token);
+  } else {
+    console.log("Token não encontrado.");
+  }
+
+  return match[1];
+}
+
+async function activateUser(userId) {
+  return await activation.activateUserByUserId(userId);
+}
+
+async function addFeaturesToUser(userObject, features) {
+  const updatedUser = await user.addFeatures(userObject.id, features);
+  return updatedUser;
 }
 
 const orchestrator = {
@@ -95,6 +122,9 @@ const orchestrator = {
   createSession,
   deleteAllEmails,
   getLastEmail,
+  findTokenInEmail,
+  activateUser,
+  addFeaturesToUser,
 };
 
 export default orchestrator;
